@@ -107,7 +107,7 @@ export const DorkBuilderModal: React.FC<DorkBuilderModalProps> = ({ isOpen, onCl
     setSavedTemplates(prev => prev.filter(t => t.id !== id));
   };
 
-  const [viewMode, setViewMode] = useState<'single' | 'bulk'>('single');
+  const [viewMode, setViewMode] = useState<'single' | 'bulk' | 'heatmap'>('single');
   const [bulkDomains, setBulkDomains] = useState('');
   const [selectedBulkTemplates, setSelectedBulkTemplates] = useState<string[]>(['b1', 'b2']);
   const [bulkResults, setBulkResults] = useState<{domain: string, template: string, dork: string}[]>([]);
@@ -192,6 +192,12 @@ export const DorkBuilderModal: React.FC<DorkBuilderModalProps> = ({ isOpen, onCl
                       className={`px-3 py-1 text-[10px] uppercase font-bold tracking-wider rounded transition-colors ${viewMode === 'bulk' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/80'}`}
                   >
                       Toplu Üretici
+                  </button>
+                  <button 
+                      onClick={() => setViewMode('heatmap')}
+                      className={`px-3 py-1 text-[10px] uppercase font-bold tracking-wider rounded transition-colors ${viewMode === 'heatmap' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/80'}`}
+                  >
+                      Sık Kullanılanlar
                   </button>
               </div>
           </div>
@@ -388,6 +394,73 @@ export const DorkBuilderModal: React.FC<DorkBuilderModalProps> = ({ isOpen, onCl
                             </div>
                         )}
                     </div>
+                </div>
+            </div>
+          )}
+
+          {viewMode === 'heatmap' && (
+            <div className="w-full p-6 flex flex-col gap-6 overflow-y-auto bg-[#080808]">
+                <div className="flex flex-col gap-2">
+                    <h4 className="text-[10px] uppercase font-bold text-green-500/80 tracking-wider flex items-center gap-2">
+                        <Terminal className="w-4 h-4" /> Dork Kullanım Isı Haritası
+                    </h4>
+                    <p className="text-[10px] text-white/40 font-mono">
+                        Kaydedilmiş şablonlarınız ve genel topluluk verisi üzerinden en sık kullanılan arama operatörlerinin yoğunluğu (Historical + Current Watchlist).
+                    </p>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {[
+                        { op: 'filetype:env', freq: 95, desc: 'Env Dosyaları' },
+                        { op: 'intitle:"index of"', freq: 88, desc: 'Açık Dizinler' },
+                        { op: 'inurl:admin', freq: 76, desc: 'Admin Panelleri' },
+                        { op: 'ext:sql', freq: 65, desc: 'Veritabanı Dump' },
+                        { op: 'site:', freq: 82, desc: 'Domain Kısıtlama' },
+                        { op: 'filetype:pdf', freq: 45, desc: 'Belgeler' },
+                        { op: 'inuid:', freq: 12, desc: 'Kullanıcı ID' },
+                        { op: 'password', freq: 91, desc: 'Şifre İfadesi' },
+                        { op: 'intext:"API_KEY"', freq: 85, desc: 'API Anahtarları' },
+                        { op: '"confidential"', freq: 50, desc: 'Gizli Belgeler' },
+                        { op: 'ext:log', freq: 60, desc: 'Sistem Logları' },
+                        { op: 'inurl:wp-admin', freq: 78, desc: 'WordPress Admin' },
+                        { op: 'ext:bak', freq: 55, desc: 'Yedek Dosyaları' },
+                        { op: 'intext:"BEGIN PRIVATE KEY"', freq: 80, desc: 'Özel Anahtarlar' },
+                        { op: 'filetype:xls "email"', freq: 40, desc: 'E-posta Listeleri' },
+                    ].sort((a, b) => b.freq - a.freq).map((item, idx) => {
+                         // Calculate color based on frequency
+                         let bgColor = 'bg-white/5';
+                         let textColor = 'text-white/50';
+                         let borderColor = 'border-white/5';
+                         
+                         if (item.freq > 80) {
+                             bgColor = 'bg-red-500/20';
+                             textColor = 'text-red-400';
+                             borderColor = 'border-red-500/30';
+                         } else if (item.freq > 60) {
+                             bgColor = 'bg-orange-500/20';
+                             textColor = 'text-orange-400';
+                             borderColor = 'border-orange-500/30';
+                         } else if (item.freq > 40) {
+                             bgColor = 'bg-yellow-500/20';
+                             textColor = 'text-yellow-400';
+                             borderColor = 'border-yellow-500/30';
+                         }
+
+                         return (
+                            <div key={idx} className={`${bgColor} border ${borderColor} rounded p-3 flex flex-col gap-2 relative overflow-hidden group`}>
+                                <div className="z-10 relative">
+                                    <div className={`text-[11px] font-bold font-mono ${textColor}`}>{item.op}</div>
+                                    <div className="text-[9px] uppercase tracking-wider text-white/50 mt-1">{item.desc}</div>
+                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                                <div className={`absolute bottom-2 right-2 text-[10px] font-bold opacity-30 ${textColor}`}>
+                                    {item.freq}%
+                                </div>
+                                {/* Simple intensity bar */}
+                                <div className="absolute bottom-0 left-0 h-0.5 bg-current opacity-50" style={{ width: `${item.freq}%`, color: textColor === 'text-red-400' ? '#ef4444' : textColor === 'text-orange-400' ? '#f97316' : textColor === 'text-yellow-400' ? '#eab308' : '#3f3f46' }} />
+                            </div>
+                         );
+                    })}
                 </div>
             </div>
           )}

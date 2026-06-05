@@ -212,7 +212,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] font-sans text-[#e0e0e0] select-none flex flex-col overflow-hidden">
+    <div className="h-screen bg-[#050505] font-sans text-[#e0e0e0] select-none flex flex-col overflow-hidden">
       {/* Header */}
       <header className="h-14 border-b border-white/10 flex items-center justify-between px-6 bg-[#0a0a0a]">
         <div className="flex items-center gap-4">
@@ -460,15 +460,17 @@ export default function App() {
         <div className="bg-red-600 h-full px-4 flex items-center shrink-0">
           <span className="text-[10px] font-black uppercase text-white tracking-widest">SON DAKİKA</span>
         </div>
-        <div className="px-4 flex gap-8 animate-none whitespace-nowrap overflow-hidden text-xs">
-          {signals.length > 0 ? signals.slice(0, 5).map((sig, idx) => (
-              <React.Fragment key={idx}>
-                <span className="text-white/80 font-medium whitespace-nowrap"><span className="text-red-500 mr-2">[{new Date(sig.pubDate).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}]</span> {sig.title}</span>
-                <span className="text-white/40">|</span>
-              </React.Fragment>
-          )) : (
-             <span className="text-white/40">Sinyal bekleniyor...</span>
-          )}
+        <div className="flex-1 overflow-hidden relative h-full flex items-center">
+            <div className="absolute flex gap-8 whitespace-nowrap text-xs w-max animate-marquee hover:pause min-w-full">
+              {signals.length > 0 ? signals.slice(0, 10).map((sig, idx) => (
+                  <React.Fragment key={idx}>
+                    <span className="text-white/80 font-medium whitespace-nowrap cursor-pointer hover:text-white"><span className="text-red-500 mr-2">[{new Date(sig.pubDate).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}]</span> {sig.title}</span>
+                    {idx < Math.min(signals.length, 10) - 1 && <span className="text-white/40">|</span>}
+                  </React.Fragment>
+              )) : (
+                 <span className="text-white/40 px-4">Sinyal bekleniyor...</span>
+              )}
+            </div>
         </div>
       </footer>
 
